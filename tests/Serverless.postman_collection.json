@@ -1,0 +1,33 @@
+{
+	"info": {
+		"_postman_id": "165857ea-4cd5-4422-ba7a-2553c1f0eda7",
+		"name": "Serverless",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "HelloWorld",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://rp9mmlq3l1.execute-api.us-east-2.amazonaws.com/default/helloWord",
+					"protocol": "https",
+					"host": [
+						"rp9mmlq3l1",
+						"execute-api",
+						"us-east-2",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"default",
+						"helloWord"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
