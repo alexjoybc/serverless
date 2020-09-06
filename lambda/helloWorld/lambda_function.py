@@ -12,7 +12,12 @@ def lambda_handler(event, context):
             'body': json.dumps("body is required")
     }
 
-    print("Received new event from github")
+    # TODO implement
+    print("Hello from Lambda!")
+    
+    print(event['body'])
+    
+    requestBody = json.loads(event['body'])['pull_request']
 
     TWILIO_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json"
 
@@ -48,8 +53,8 @@ def lambda_handler(event, context):
             'body': json.dumps("Invalid body.")
         }
 
-    requestBody = json.loads(event['body'])['pull_request']
     pullRequestTemplate = "{}\n Pull Request #{} is {} on [{} {}] branch by {}: \n{}"
+    
     pullRequestBody = pullRequestTemplate.format(\
         requestBody['title'],\
         requestBody['number'],\
@@ -59,7 +64,7 @@ def lambda_handler(event, context):
         requestBody['user']['login'],\
         requestBody['html_url'])
 
-    print("SMS message successfully built")
+    print(requestBody)
 
     # insert Twilio Account SID into the REST API URL
     populated_url = TWILIO_SMS_URL.format(TWILIO_ACCOUNT_SID)
@@ -85,8 +90,6 @@ def lambda_handler(event, context):
             'body': json.dumps(str(e))
         }  
 
-    return "SMS sent successfully!"
-    
     return {
         'statusCode': 200,
         'body': json.dumps("SMS sent successfully!")
