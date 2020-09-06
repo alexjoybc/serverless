@@ -12,12 +12,7 @@ def lambda_handler(event, context):
             'body': json.dumps("body is required")
     }
 
-    # TODO implement
-    print("Hello from Lambda!")
-    
-    print(event['body'])
-    
-    requestBody = json.loads(event['body'])
+    print("Received new event from github")
 
     TWILIO_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json"
 
@@ -52,8 +47,47 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': json.dumps("Invalid body.")
         }
+
+    requestBody = json.loads(event['body'])['pull_request']
+    pullRequestTemplate = "{}\n Pull Request #{} is {} on [{} {}] branch by {}: \n{}"
+    pullRequestBody = pullRequestTemplate.format(\
+        requestBody['title'],\
+        requestBody['number'],\
+        requestBody['state'],\
+        requestBody['base']['repo']['name'],\
+        requestBody['base']['ref'],\
+        requestBody['user']['login'],\
+        requestBody['html_url'])
+
+    print("SMS message successfully built")
+
+    # insert Twilio Account SID into the REST API URL
+    populated_url = TWILIO_SMS_URL.format(TWILIO_ACCOUNT_SID)
+    post_params = {"To": TWILIO_DEST_NUMBER, "From": TWILIO_FROM_NUMBER, "Body": pullRequestBody}
+
+    # encode the parameters for Python's urllib
+    data = parse.urlencode(post_params).encode()
+    req = request.Request(populated_url)
+
+    # add authentication header to request based on Account SID + Auth Token
+    authentication = "{}:{}".format(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    base64string = base64.b64encode(authentication.encode('utf-8'))
+    req.add_header("Authorization", "Basic %s" % base64string.decode('ascii'))
+
+    try:
+        # perform HTTP POST request
+        with request.urlopen(req, data) as f:
+            print("Twilio returned {}".format(str(f.read().decode('utf-8'))))
+    except Exception as e:
+        # something went wrong!
+        return {
+            'statusCode': 500,
+            'body': json.dumps(str(e))
+        }  
+
+    return "SMS sent successfully!"
     
     return {
         'statusCode': 200,
-        'body': json.dumps(requestBody['pull_request'])
+        'body': json.dumps("SMS sent successfully!")
     }
